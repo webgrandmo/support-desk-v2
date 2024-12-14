@@ -1,0 +1,12 @@
+{
+	"name": "support-desk",
+	"version": "1.0.0",
+	"description": "Ticket support desk",
+	"main": "server.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"serve": "node backend/server.js"
+	},
+	"author": "Andriy Trofimov",
+	"license": "MIT"
+}
