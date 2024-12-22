@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSignInAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useSelector, useDispatch } from 'react-redux';
-import { login } from '../features/auth/authSlice';
+import { login, reset } from '../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+import Spinner from '../components/ui/Spinner';
 
 function Login() {
 	const [formData, setFormData] = useState({
@@ -11,29 +13,49 @@ function Login() {
 	});
 
 	const { email, password } = formData;
+	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
-	const { user, isLoading, isSuccess, message } = useSelector((state) => state.auth);
+	const { user, isLoading, isSuccess, isError, message } = useSelector((state) => state.auth);
 	const handleChange = (e) => {
 		setFormData((prevState) => ({
 			...prevState,
 			[e.target.name]: e.target.value,
 		}));
 	};
+
+	useEffect(() => {
+		if (isError) {
+			toast.error(message);
+		}
+
+		// Redirect when logged in
+		if (user || isSuccess) {
+			navigate('/');
+			toast.success('Login successful');
+		}
+
+		// dispatch(reset());
+	}, [isError, isSuccess, user, message, navigate, dispatch]);
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
-		if (!email || !password) {
-			toast.error('Please include all the fields');
-		} else {
-			const userData = {
-				email,
-				password,
-			};
+		const userData = {
+			email,
+			password,
+		};
+		dispatch(login(userData));
+		// if (email === '' || password === '') {
+		// 	toast.error('Please include all the fields');
+		// } else {
 
-			dispatch(login(userData));
-		}
+		// }
 	};
+
+	if (isLoading) {
+		return <Spinner />;
+	}
 	return (
 		<>
 			<section className='heading'>
