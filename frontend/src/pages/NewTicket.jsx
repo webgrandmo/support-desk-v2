@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { reset, createTicket } from '../features/tickets/ticketSlice';
+import Spinner from '../components/ui/Spinner';
+import BackButton from '../components/ui/BackButton';
 
 function NewTicket() {
 	const { user } = useSelector((state) => state.auth);
@@ -8,6 +13,11 @@ function NewTicket() {
 	const [product, setProduct] = useState('iPhone');
 	const [description, setDescription] = useState('');
 
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+
+	const { isLoading, isSuccess, isError, message } = useSelector((state) => state.tickets);
+
 	const handleChangeProduct = (e) => {
 		setProduct(e.target.value);
 	};
@@ -15,19 +25,35 @@ function NewTicket() {
 		setDescription(e.target.value);
 	};
 
+	useEffect(() => {
+		if (isError) {
+			toast.error(message);
+		}
+
+		if (isSuccess) {
+			dispatch(reset());
+			navigate('/tickets');
+		}
+
+		dispatch(reset());
+	}, [isError, isSuccess, dispatch, message, navigate]);
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
 
 		const newTicket = {
-			name,
-			email,
 			product,
 			description,
 		};
-		console.log(newTicket);
+		dispatch(createTicket(newTicket));
 	};
+
+	if (isLoading) {
+		return <Spinner />;
+	}
 	return (
 		<>
+			<BackButton url={'/'} />
 			<section className='heading'>
 				<h1>New ticket</h1>
 				<p>Please fill out the form below</p>
@@ -79,11 +105,7 @@ function NewTicket() {
 							onChange={handleChangeDescription}></textarea>
 					</div>
 					<div className='form-group'>
-						<button
-							type='submit'
-							className='btn btn-primary'>
-							Submit your ticket
-						</button>
+						<button className='btn btn-primary'>Submit your ticket</button>
 					</div>
 				</form>
 			</section>
